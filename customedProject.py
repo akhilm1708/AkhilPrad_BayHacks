@@ -53,7 +53,7 @@ class PartyFoodPlanner:
         # Create a new top-level window for theme selection
         theme_window = ctk.CTkToplevel(self.root)
         theme_window.title("Select Theme")
-        theme_window.geometry("300x150")
+        theme_window.geometry("450x450")
 
         theme_label = ctk.CTkLabel(theme_window, text="Select Theme:", font=("Helvetica", 12, 'bold'))
         theme_label.pack(pady=10)
