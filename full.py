@@ -1,6 +1,7 @@
 import customtkinter as ctk
 from tkinter import messagebox, Entry, Button, Label, Frame
 import sqlite3
+import customedProject
 
 # Initialize main window
 root = ctk.CTk()
@@ -73,6 +74,7 @@ def login():
         Login_frame.pack_forget()  # Use pack_forget instead of destroy
         Success_Label = Label(root, text="Login Successful", font=("Helvetica", 16, "bold"))
         Success_Label.pack(expand=True)
+        customedProject.main()
 
     def submit():
         my_username = Username_Entry.get()
@@ -83,6 +85,8 @@ def login():
 
         if result:
             new_frame()
+            
+            
         else:
             messagebox.showerror("Error", "Invalid login credentials")
 
