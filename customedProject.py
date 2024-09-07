@@ -1,6 +1,8 @@
 import customtkinter as ctk
-from tkinter import messagebox, Menu
+from tkinter import Menu, messagebox
 import sqlite3
+import uuid
+import pyperclip  # Make sure to install this library using `pip install pyperclip`
 
 class PartyFoodPlanner:
     def __init__(self, root):
@@ -183,100 +185,93 @@ class PartyFoodPlanner:
     def add_entry(self):
         my_firstname = self.FirstName_Entry.get()
         my_lastname = self.LastName_Entry.get()
-        my_groupname = self.search_entry.get()
+        my_groupname = self.selected_group
         my_favfood = self.Favfood_Entry.get()
-        my_alg1 = self.Allergy1_Entry.get()
-        my_alg2 = self.Allergy2_Entry.get()
+        my_allergy1 = self.Allergy1_Entry.get()
+        my_allergy2 = self.Allergy2_Entry.get()
         my_details = self.Details_Entry.get()
 
-        if not self.selected_group:
-            messagebox.showwarning("Error", "No group selected.")
+        if not my_firstname or not my_lastname or not my_groupname or not my_favfood:
+            messagebox.showwarning("Missing Information", "Please fill out all required fields.")
             return
 
-        if not my_firstname or not my_lastname:
-            messagebox.showwarning("Error", "First Name and Last Name are required.")
-            return
-
-        insert_query = f"INSERT INTO {self.selected_group} (first_name, last_name, favfood, alg1, alg2, details) VALUES (?, ?, ?, ?, ?, ?)"
-        try:
-            self.conn.execute(insert_query, (my_firstname, my_lastname, my_groupname, my_favfood, my_alg1, my_alg2, my_details))
-            self.conn.commit()
-            messagebox.showinfo("Success", "New entry added successfully!")
-            self.show_group_form()
-        except sqlite3.Error as e:
-            messagebox.showerror("Database Error", f"SQLite Error: {str(e)}")
-
-    def show_group_form(self):
-        self.clear_frame(self.UI_Frame)
-        self.clear_frame(self.Display_Frame)
-
-        back_button = ctk.CTkButton(self.UI_Frame, text="Back to Home", command=self.show_home_page)
-        back_button.grid(row=0, column=0, padx=10, pady=10)
-
-        Title = ctk.CTkLabel(self.UI_Frame, text="Create New Group", text_color="blue", font=("Helvetica", 15, 'bold'))
-        Title.grid(row=1, column=0, columnspan=2, pady=10)
-
-        self.create_form_fields()
-
-        Submit_Button = ctk.CTkButton(self.UI_Frame, text="Submit", font=("Helvetica", 12, 'bold'), fg_color="blue", command=self.submit)
-        Submit_Button.grid(row=9, column=0, columnspan=2, pady=10, ipady=5)
-
-    def create_form_fields(self):
-        self.FirstName_Entry = self.create_entry("First Name: ", 2)
-        self.LastName_Entry = self.create_entry("Last Name: ", 3)
-        self.GroupName_Entry = self.create_entry("Group Name: ", 4)
-        self.Favfood_Entry = self.create_entry("Favorite Food: ", 5)
-        self.Allergy1_Entry = self.create_entry("Allergies: ", 6)
-        self.Allergy2_Entry = self.create_entry("Restricted Diets: ", 7)
-        self.Details_Entry = self.create_entry("Any Other Details/Info: ", 8)
-
-    def create_entry(self, label_text, row):
-        label = ctk.CTkLabel(self.UI_Frame, text=label_text, font=("Helvetica", 13, 'bold'))
-        label.grid(row=row, column=0, sticky="w", padx=10)
-        entry = ctk.CTkEntry(self.UI_Frame, placeholder_text=f"Enter {label_text.lower()}")
-        entry.grid(row=row, column=1, padx=10)
-        return entry
-
-    def submit(self):
-        my_firstname = self.FirstName_Entry.get()
-        my_lastname = self.LastName_Entry.get()
-        my_group = self.GroupName_Entry.get()
-        my_favfood = self.Favfood_Entry.get()
-        my_alg1 = self.Allergy1_Entry.get()
-        my_alg2 = self.Allergy2_Entry.get()
-        my_details = self.Details_Entry.get()
-
-        cursor = self.conn.execute(f"PRAGMA table_info({my_group})")
-        table_exists = cursor.fetchall()
-
-        if not table_exists:
-            self.conn.execute(f"CREATE TABLE {my_group} (id INTEGER PRIMARY KEY AUTOINCREMENT, first_name TEXT NOT NULL, last_name TEXT NOT NULL, group_name TEXT NOT NULL, favfood TEXT, alg1 TEXT, alg2 TEXT, details TEXT)")
-            self.conn.commit()
-
-        insert_query = f"INSERT INTO {my_group} (first_name, last_name, group_name, favfood, alg1, alg2, details) VALUES (?, ?, ?, ?, ?, ?, ?)"
-        self.conn.execute(insert_query, (my_firstname, my_lastname, my_group, my_favfood, my_alg1, my_alg2, my_details))
+        self.conn.execute(f"""
+            INSERT INTO {my_groupname} (firstname, lastname, groupname, favfood, alg1, alg2, details)
+            VALUES (?, ?, ?, ?, ?, ?, ?)""",
+            (my_firstname, my_lastname, my_groupname, my_favfood, my_allergy1, my_allergy2, my_details))
         self.conn.commit()
 
-        messagebox.showinfo("Success", "Group created and data submitted successfully!")
-        self.show_home_page()
+        messagebox.showinfo("Entry Added", "New entry added successfully!")
 
-    def display_find_create_options(self):
-        find_button = ctk.CTkButton(self.UI_Frame, text="Find Group", font=("Helvetica", 12), command=self.group_scroll)
-        find_button.grid(row=1, column=0, padx=10, pady=10)
+    def show_copy_group_name_dialog(self, group_name):
+        copy_dialog = ctk.CTkToplevel(self.root)
+        copy_dialog.title("Group Created")
+        copy_dialog.geometry("300x150")
 
-        create_button = ctk.CTkButton(self.UI_Frame, text="Create Group", font=("Helvetica", 12), command=self.show_group_form)
-        create_button.grid(row=1, column=1, padx=10, pady=10)
+        label = ctk.CTkLabel(copy_dialog, text=f"Group '{group_name}' created successfully!", font=("Helvetica", 12))
+        label.pack(pady=10)
+
+        def copy_to_clipboard():
+            pyperclip.copy(group_name)
+            messagebox.showinfo("Copied", "Group name copied to clipboard!")
+
+        copy_button = ctk.CTkButton(copy_dialog, text="Copy to Clipboard", command=copy_to_clipboard)
+        copy_button.pack(pady=10)
+
+    def create_group_table(self):
+        generated_group_name = f"party_{str(uuid.uuid4())[:8]}"  # Generate unique group name
+        self.conn.execute(f"""
+            CREATE TABLE IF NOT EXISTS {generated_group_name} (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                firstname TEXT NOT NULL,
+                lastname TEXT NOT NULL,
+                groupname TEXT NOT NULL,
+                favfood TEXT NOT NULL,
+                alg1 TEXT,
+                alg2 TEXT,
+                details TEXT
+            )""")
+        self.conn.commit()
+
+        self.show_copy_group_name_dialog(generated_group_name)
+        self.selected_group = generated_group_name
+        self.show_add_entry_form()
 
     def show_home_page(self):
         self.clear_frame(self.UI_Frame)
         self.clear_frame(self.Display_Frame)
-        self.display_find_create_options()
 
-def main():
+        find_group_button = ctk.CTkButton(self.UI_Frame, text="Find Group", command=self.group_scroll)
+        find_group_button.grid(row=1, column=0, padx=10, pady=10)
+
+        create_group_button = ctk.CTkButton(self.UI_Frame, text="Create Group", command=self.create_group_table)
+        create_group_button.grid(row=2, column=0, padx=10, pady=10)
+
+        self.details_label = ctk.CTkLabel(self.UI_Frame, text="", font=("Helvetica", 12))
+        self.details_label.grid(row=3, column=0, padx=10, pady=10)
+
+    def create_entry(self, label_text, row):
+        label = ctk.CTkLabel(self.UI_Frame, text=label_text, font=("Helvetica", 12))
+        label.grid(row=row, column=0, padx=10, pady=5, sticky="w")
+        entry = ctk.CTkEntry(self.UI_Frame)
+        entry.grid(row=row, column=1, padx=10, pady=5, sticky="w")
+        return entry
+
+    def display_find_create_options(self):
+        # This method sets up the initial UI for finding or creating a group
+        self.clear_frame(self.UI_Frame)
+        self.clear_frame(self.Display_Frame)
+
+        find_group_button = ctk.CTkButton(self.UI_Frame, text="Find Group", command=self.group_scroll)
+        find_group_button.grid(row=1, column=0, padx=10, pady=10)
+
+        create_group_button = ctk.CTkButton(self.UI_Frame, text="Create Group", command=self.create_group_table)
+        create_group_button.grid(row=2, column=0, padx=10, pady=10)
+
+        self.details_label = ctk.CTkLabel(self.UI_Frame, text="", font=("Helvetica", 12))
+        self.details_label.grid(row=3, column=0, padx=10, pady=10)
+
+if __name__ == "__main__":
     root = ctk.CTk()
     app = PartyFoodPlanner(root)
     root.mainloop()
-    app.conn.close()
-
-if __name__ == "__main__":
-    main()
