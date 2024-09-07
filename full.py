@@ -50,7 +50,7 @@ def sign_up_func():
     Signup_frame = ctk.CTkFrame(root, corner_radius=15, width=400, height=300)
     Signup_frame.pack(pady=30)
 
-    title_label = ctk.CTkLabel(Signup_frame, text="SIGN UP", font=ctk.CTkFont(size=20, weight="bold"))
+    title_label = ctk.CTkLabel(Signup_frame, text="Sign Up", font=ctk.CTkFont(size=20, weight="bold"))
     title_label.grid(row=0, column=0, columnspan=2, pady=(10, 20))
 
     Username_Label = ctk.CTkLabel(Signup_frame, text="Create Username:", font=ctk.CTkFont(size=14))
@@ -103,7 +103,7 @@ def login():
     Login_frame = ctk.CTkFrame(root, corner_radius=15, width=400, height=300)
     Login_frame.pack(pady=30)
 
-    title_label = ctk.CTkLabel(Login_frame, text="LOGIN", font=ctk.CTkFont(size=20, weight="bold"))
+    title_label = ctk.CTkLabel(Login_frame, text="Log In", font=ctk.CTkFont(size=20, weight="bold"))
     title_label.grid(row=0, column=0, columnspan=2, pady=(10, 20))
 
     Username_Label = ctk.CTkLabel(Login_frame, text="Username:", font=ctk.CTkFont(size=14))
