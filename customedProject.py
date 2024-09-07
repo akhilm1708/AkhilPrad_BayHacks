@@ -29,28 +29,19 @@ class PartyFoodPlanner:
         self.display_find_create_options()
 
     def create_menu(self):
-        # Create a menu bar
         menubar = Menu(self.root)
 
-        # Create a 'Settings' menu
         settings_menu = Menu(menubar, tearoff=0)
         settings_menu.add_command(label="Change Theme", command=self.open_theme_selection)
-
-        # Add 'Settings' menu to the menu bar
         menubar.add_cascade(label="Settings", menu=settings_menu)
 
-        # Create a 'Home' menu
         home_menu = Menu(menubar, tearoff=0)
         home_menu.add_command(label="Home", command=self.show_home_page)
-
-        # Add 'Home' menu to the menu bar
         menubar.add_cascade(label="Home", menu=home_menu)
 
-        # Set the menu bar to the root window
         self.root.config(menu=menubar)
 
     def open_theme_selection(self):
-        # Create a new top-level window for theme selection
         theme_window = ctk.CTkToplevel(self.root)
         theme_window.title("Select Theme")
         theme_window.geometry("450x450")
@@ -63,25 +54,20 @@ class PartyFoodPlanner:
         theme_dropdown.pack(pady=10)
 
     def change_theme(self, choice):
-        """Change the theme of the application."""
-        ctk.set_appearance_mode(choice)  # Change between "Light", "Dark", "System"
+        ctk.set_appearance_mode(choice)
         self.root.update_idletasks()
 
     def clear_frame(self, frame):
-        """Clear all widgets from a frame."""
         for widget in frame.winfo_children():
             widget.destroy()
 
     def group_scroll(self):
-        # Clear both frames before loading new content
         self.clear_frame(self.UI_Frame)
         self.clear_frame(self.Display_Frame)
 
-        # Add a 'Back to Home' button
         back_button = ctk.CTkButton(self.UI_Frame, text="Back to Home", command=self.show_home_page)
         back_button.grid(row=0, column=0, padx=10, pady=10)
 
-        # Search field for entering a group name
         search_label = ctk.CTkLabel(self.UI_Frame, text="Search Group Name:", font=("Helvetica", 12, 'bold'))
         search_label.grid(row=1, column=0, padx=10, pady=5)
 
@@ -91,18 +77,16 @@ class PartyFoodPlanner:
         search_button = ctk.CTkButton(self.UI_Frame, text="Find Group", command=self.find_group)
         search_button.grid(row=1, column=2, padx=10, pady=5)
 
-        # Label to show group details
         self.details_label = ctk.CTkLabel(self.UI_Frame, text="", font=("Helvetica", 12))
         self.details_label.grid(row=2, column=0, columnspan=3, padx=10, pady=10)
 
     def find_group(self):
         group_name = self.search_entry.get()
-
-        # Check if the group exists in the database
         cursor = self.conn.execute("SELECT name FROM sqlite_master WHERE type='table';")
         tables = [table[0] for table in cursor.fetchall()]
 
         if group_name in tables:
+            self.selected_group = group_name
             self.check_user_allergies(group_name)
         else:
             messagebox.showwarning("Not Found", f"Group '{group_name}' does not exist.")
@@ -116,32 +100,28 @@ class PartyFoodPlanner:
             messagebox.showwarning("No Data", f"No data found for group '{group_name}'.")
             return
 
-        # Assume we are checking the first user's allergies (could be extended for multiple users)
         first_user = rows[0]
         user_id, first_name, last_name, group_name, favfood, alg1, alg2, details = first_user
 
         if not alg1 or not alg2:
-            # Prompt user to enter allergy info
             self.prompt_allergy_update(group_name, user_id, alg1, alg2)
         else:
-            # Display table contents if allergies are present
             self.display_table_contents(group_name)
             self.details_label.configure(text=f"Group '{group_name}' found. You have access to the party.")
+            add_entry_button = ctk.CTkButton(self.UI_Frame, text="Add Entry", font=("Helvetica", 12), command=self.show_add_entry_form)
+            add_entry_button.grid(row=3, column=0, columnspan=3, pady=10)
 
     def prompt_allergy_update(self, group_name, user_id, alg1, alg2):
-        # Prompt the user to enter allergy information
         def update_allergies():
             new_alg1 = alg1_entry.get()
             new_alg2 = alg2_entry.get()
 
-            # Update the database with new allergy information
             self.conn.execute(f"UPDATE {group_name} SET alg1 = ?, alg2 = ? WHERE id = ?", (new_alg1, new_alg2, user_id))
             self.conn.commit()
 
             messagebox.showinfo("Updated", "Allergy information updated successfully!")
             self.display_table_contents(group_name)
 
-        # Create a new top-level window for allergy update
         update_window = ctk.CTkToplevel(self.root)
         update_window.title("Update Allergy Information")
         update_window.geometry("300x200")
@@ -160,7 +140,6 @@ class PartyFoodPlanner:
         submit_button.pack(pady=10)
 
     def display_table_contents(self, table_name):
-        # Clear the Display_Frame before showing new table contents
         self.clear_frame(self.Display_Frame)
 
         cursor = self.conn.execute(f"PRAGMA table_info({table_name})")
@@ -175,37 +154,81 @@ class PartyFoodPlanner:
 
         for row_num, row in enumerate(rows, start=1):
             for col_num, col_value in enumerate(row):
-                label_text = f"{col_value}"
-                label = ctk.CTkLabel(self.Display_Frame, text=label_text, font=("Helvetica", 12))
+                label = ctk.CTkLabel(self.Display_Frame, text=f"{col_value}", font=("Helvetica", 12))
                 label.grid(row=row_num, column=col_num, padx=5, pady=3, sticky="w")
 
-    def show_group_form(self):
-        # Clear both frames before showing the form
+    def show_add_entry_form(self):
         self.clear_frame(self.UI_Frame)
         self.clear_frame(self.Display_Frame)
 
-        # Add a 'Back to Home' button
+        back_button = ctk.CTkButton(self.UI_Frame, text="Back to Home", command=self.show_home_page)
+        back_button.grid(row=0, column=0, padx=10, pady=10)
+
+        Title = ctk.CTkLabel(self.UI_Frame, text="Add New Entry", text_color="blue", font=("Helvetica", 15, 'bold'))
+        Title.grid(row=1, column=0, columnspan=2, pady=10)
+
+        self.create_add_entry_fields()
+
+        Confirm_Button = ctk.CTkButton(self.UI_Frame, text="Confirm", font=("Helvetica", 12, 'bold'), fg_color="blue", command=self.add_entry)
+        Confirm_Button.grid(row=9, column=0, columnspan=2, pady=10, ipady=5)
+
+    def create_add_entry_fields(self):
+        self.FirstName_Entry = self.create_entry("First Name: ", 2)
+        self.LastName_Entry = self.create_entry("Last Name: ", 3)
+        self.Favfood_Entry = self.create_entry("Favorite Food: ", 4)
+        self.Allergy1_Entry = self.create_entry("Allergies: ", 5)
+        self.Allergy2_Entry = self.create_entry("Restricted Diets: ", 6)
+        self.Details_Entry = self.create_entry("Any Other Details/Info: ", 7)
+
+    def add_entry(self):
+        my_firstname = self.FirstName_Entry.get()
+        my_lastname = self.LastName_Entry.get()
+        my_groupname = self.search_entry.get()
+        my_favfood = self.Favfood_Entry.get()
+        my_alg1 = self.Allergy1_Entry.get()
+        my_alg2 = self.Allergy2_Entry.get()
+        my_details = self.Details_Entry.get()
+
+        if not self.selected_group:
+            messagebox.showwarning("Error", "No group selected.")
+            return
+
+        if not my_firstname or not my_lastname:
+            messagebox.showwarning("Error", "First Name and Last Name are required.")
+            return
+
+        insert_query = f"INSERT INTO {self.selected_group} (first_name, last_name, favfood, alg1, alg2, details) VALUES (?, ?, ?, ?, ?, ?)"
+        try:
+            self.conn.execute(insert_query, (my_firstname, my_lastname, my_groupname, my_favfood, my_alg1, my_alg2, my_details))
+            self.conn.commit()
+            messagebox.showinfo("Success", "New entry added successfully!")
+            self.show_group_form()
+        except sqlite3.Error as e:
+            messagebox.showerror("Database Error", f"SQLite Error: {str(e)}")
+
+    def show_group_form(self):
+        self.clear_frame(self.UI_Frame)
+        self.clear_frame(self.Display_Frame)
+
         back_button = ctk.CTkButton(self.UI_Frame, text="Back to Home", command=self.show_home_page)
         back_button.grid(row=0, column=0, padx=10, pady=10)
 
         Title = ctk.CTkLabel(self.UI_Frame, text="Create New Group", text_color="blue", font=("Helvetica", 15, 'bold'))
         Title.grid(row=1, column=0, columnspan=2, pady=10)
 
-        # Form fields for creating a group
         self.create_form_fields()
 
-        Submit_Button = ctk.CTkButton(self.UI_Frame, text="Submit", font=("Helvetica", 12, 'bold'), fg_color="blue",
-                                      command=self.submit)
-        Submit_Button.grid(row=8, column=0, columnspan=2, pady=10, ipady=5)
+        Submit_Button = ctk.CTkButton(self.UI_Frame, text="Submit", font=("Helvetica", 12, 'bold'), fg_color="blue", command=self.submit)
+        Submit_Button.grid(row=9, column=0, columnspan=2, pady=10, ipady=5)
 
     def create_form_fields(self):
-        self.FirstName_Entry = self.create_entry("First Name: ", 1)
-        self.LastName_Entry = self.create_entry("Last Name: ", 2)
-        self.GroupName_Entry = self.create_entry("Group Name: ", 3)
-        self.Favfood_Entry = self.create_entry("Favorite Food: ", 4)
-        self.Allergy1_Entry = self.create_entry("Allergies: ", 5)
-        self.Allergy2_Entry = self.create_entry("Restricted Diets: ", 6)
-        self.Details_Entry = self.create_entry("Any Other Details/Info: ", 7)
+        self.FirstName_Entry = self.create_entry("First Name: ", 2)
+        self.LastName_Entry = self.create_entry("Last Name: ", 3)
+        self.GroupName_Entry = self.create_entry("Group Name: ", 4)
+        self.Favfood_Entry = self.create_entry("Favorite Food: ", 5)
+        self.Allergy1_Entry = self.create_entry("Allergies: ", 6)
+        self.Allergy2_Entry = self.create_entry("Restricted Diets: ", 7)
+        self.Details_Entry = self.create_entry("Any Other Details/Info: ", 8)
 
     def create_entry(self, label_text, row):
         label = ctk.CTkLabel(self.UI_Frame, text=label_text, font=("Helvetica", 13, 'bold'))
@@ -245,11 +268,8 @@ class PartyFoodPlanner:
         create_button.grid(row=1, column=1, padx=10, pady=10)
 
     def show_home_page(self):
-        # Clear both frames before showing the home page
         self.clear_frame(self.UI_Frame)
         self.clear_frame(self.Display_Frame)
-
-        # Display "Find or Create" options on the home page
         self.display_find_create_options()
 
 def main():
