@@ -196,16 +196,16 @@ class PartyFoodPlanner:
 
         Submit_Button = ctk.CTkButton(self.UI_Frame, text="Submit", font=("Helvetica", 12, 'bold'), fg_color="blue",
                                       command=self.submit)
-        Submit_Button.grid(row=10, column=0, columnspan=2, pady=10, ipady=5)
+        Submit_Button.grid(row=8, column=0, columnspan=2, pady=10, ipady=5)
 
     def create_form_fields(self):
-        self.FirstName_Entry = self.create_entry("First Name: ", 2)
-        self.LastName_Entry = self.create_entry("Last Name: ", 3)
-        self.GroupName_Entry = self.create_entry("Group Name: ", 4)
-        self.Favfood_Entry = self.create_entry("Favorite Food: ", 5)
-        self.Allergy1_Entry = self.create_entry("Allergies: ", 6)
-        self.Allergy2_Entry = self.create_entry("Restricted Diets: ", 7)
-        self.Details_Entry = self.create_entry("Any Other Details/Info: ", 8)
+        self.FirstName_Entry = self.create_entry("First Name: ", 1)
+        self.LastName_Entry = self.create_entry("Last Name: ", 2)
+        self.GroupName_Entry = self.create_entry("Group Name: ", 3)
+        self.Favfood_Entry = self.create_entry("Favorite Food: ", 4)
+        self.Allergy1_Entry = self.create_entry("Allergies: ", 5)
+        self.Allergy2_Entry = self.create_entry("Restricted Diets: ", 6)
+        self.Details_Entry = self.create_entry("Any Other Details/Info: ", 7)
 
     def create_entry(self, label_text, row):
         label = ctk.CTkLabel(self.UI_Frame, text=label_text, font=("Helvetica", 13, 'bold'))
