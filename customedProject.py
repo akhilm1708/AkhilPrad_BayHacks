@@ -271,7 +271,7 @@ class PartyFoodPlanner:
         self.details_label = ctk.CTkLabel(self.UI_Frame, text="", font=("Helvetica", 12))
         self.details_label.grid(row=3, column=0, padx=10, pady=10)
 
-"""if __name__ == "__main__":
+if __name__ == "__main__":
     root = ctk.CTk()
     app = PartyFoodPlanner(root)
-    root.mainloop()"""
+    root.mainloop()
