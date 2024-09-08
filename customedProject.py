@@ -272,6 +272,6 @@ class PartyFoodPlanner:
         self.details_label.grid(row=3, column=0, padx=10, pady=10)
 
 if __name__ == "__main__":
-    root = ctk.CTk()
+    root = ctk.CTk()  # Make sure to initialize CTk root here
     app = PartyFoodPlanner(root)
     root.mainloop()
